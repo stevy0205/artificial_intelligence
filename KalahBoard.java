@@ -385,39 +385,45 @@ public class KalahBoard {
 	}
 	
 	private int evaluateSituation(int mulde){
-		int spieler = 0;
-
-		if(mulde>=0 && mulde<=5) spieler = 6;
+		KalahBoard copyBoard = new KalahBoard();
+		copyBoard.board = this.board.clone();
+		copyBoard.move(mulde);
+		if(curPlayer=='A'){
+			return copyBoard.board[AKalah]-copyBoard.board[BKalah];
+		} else if(curPlayer=='B'){
+			return copyBoard.board[AKalah]-copyBoard.board[BKalah];
+		}
+		/*if(mulde>=0 && mulde<=5) spieler = 6;
 		else if(mulde>=7&&mulde<=13) spieler = 13;
 		int pointsBeforeMove = board[spieler];
 		move(mulde);
 		int pointsAfterMove = board[spieler];
-		return pointsAfterMove-pointsBeforeMove;
-
+		return pointsAfterMove-pointsBeforeMove;*/
+		return 0;
 	}
 
-	private int maxAction(char curPlayer){
+	private int maxAction(char curPlayer, int depthLimit) {
 		int v = Integer.MIN_VALUE;
 		int v1 = 0;
 		int bestMulde = -1;
-		if(isFinished()){
+		if (isFinished()) {
 			return -1;
 		}
 
-		if(curPlayer=='A') {
+		if (curPlayer == 'A') {
 			for (int i = 0; i < 6; i++) {
-			v1 = minValue(curPlayer, i, limit -1);
-			if(v1 > v){
-				v = v1;
-				bestMulde = i;
-			}
+				v1 = minValue(curPlayer, i, depthLimit - 1);
+				if (v1 > v) {
+					v = v1;
+					bestMulde = i;
+				}
 			}
 		}
 
-		if(curPlayer=='B') {
+		if (curPlayer == 'B') {
 			for (int i = 7; i < 13; i++) {
-				v1 = minValue(curPlayer, i, limit -1 );
-				if(v1 > v){
+				v1 = minValue(curPlayer, i, depthLimit - 1);
+				if (v1 > v) {
 					v = v1;
 					bestMulde = i;
 				}
@@ -426,57 +432,63 @@ public class KalahBoard {
 		return bestMulde;
 	}
 
-	private int maxValue(char curPlayer, int mulde, int limit){
-		if(isFinished()) return evaluateSituation(mulde);
-		if(limit == 0) return evaluateSituation(mulde);
+	private int maxValue(char curPlayer, int mulde, int limit) {
+		if (isFinished() || limit == 0) {
+			return evaluateSituation(mulde);
+		}
 		int v = Integer.MIN_VALUE;
 		int temp = 0;
-		if(curPlayer=='A') {
+		if (curPlayer == 'A') {
 			for (int i = 0; i < 6; i++) {
-				temp = minValue(curPlayer, i, limit -1);
-				if(temp > v){
+				temp = minValue(curPlayer, i, limit - 1);
+				if (temp > v) {
 					v = temp;
 				}
-
 			}
 		}
 
-		if(curPlayer=='B') {
+		if (curPlayer == 'B') {
 			for (int i = 7; i < 13; i++) {
-				temp = minValue(curPlayer, i, limit-1);
-				if(temp > v){
+				temp = minValue(curPlayer, i, limit - 1);
+				if (temp > v) {
 					v = temp;
 				}
 			}
 		}
-
 		return v;
 	}
 
-	private int minValue(char curPlayer, int mulde, int limit){
-		if(isFinished()) return evaluateSituation(mulde);
-		if(limit == 0) return evaluateSituation(maxValue(curPlayer,i));
+	private int minValue(char curPlayer, int mulde, int limit) {
+		if (isFinished() || limit == 0) {
+			return evaluateSituation(mulde);
+		}
 		int v = Integer.MAX_VALUE;
 		int temp = 0;
-		if(curPlayer=='A') {
+		if (curPlayer == 'A') {
 			for (int i = 0; i < 6; i++) {
-				temp = maxValue(curPlayer, i, limit -1 );
-				if(temp < v){
+				temp = maxValue(curPlayer, i, limit - 1);
+				if (temp < v) {
 					v = temp;
 				}
 			}
 		}
 
-		if(curPlayer=='B') {
+		if (curPlayer == 'B') {
 			for (int i = 7; i < 13; i++) {
-				temp = maxValue(curPlayer, i, limit -1);
-				if(temp < v){
+				temp = maxValue(curPlayer, i, limit - 1);
+				if (temp < v) {
 					v = temp;
 				}
 			}
 		}
 		return v;
 	}
+
+
+
+
+
+
 
 	private boolean possibleAction(int mulde) {
 		switch (curPlayer) {
