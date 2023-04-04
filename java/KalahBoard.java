@@ -1,4 +1,4 @@
-package kalah;
+package kalah.java;
 
 import java.util.Arrays;
 import java.util.List;
@@ -6,7 +6,7 @@ import java.util.LinkedList;
 import java.util.Scanner;
 
 /**
- * Klasse KalahBoard 
+ * Klasse src.main.java.KalahBoard
  * @author Ihr Name Oliver Bittel
  * @since 15.03.2021 
  */
@@ -416,13 +416,14 @@ public class KalahBoard {
 				if (v1 > v) {
 					v = v1;
 					bestMulde = i;
+
 				}
 			}
 		}
 
 		if (curPlayer == 'B') {
 			for (int i = 7; i < 13; i++) {
-				v1 = minValue(curPlayer, i, depthLimit - 1);
+				v1 = minValue(curPlayer, i, depthLimit - 1,null,null);
 				if (v1 > v) {
 					v = v1;
 					bestMulde = i;
@@ -432,7 +433,42 @@ public class KalahBoard {
 		return bestMulde;
 	}
 
-	private int maxValue(char curPlayer, int mulde, int limit) {
+	private int alphaBetaSearch(char curPlayer, int depthLimit){
+		int alpha = Integer.MIN_VALUE;
+		int beta = Integer.MAX_VALUE;
+		int v = Integer.MIN_VALUE;
+		int v1 = 0;
+		int bestMulde = -1;
+		if (isFinished()) {
+			return -1;
+		}
+
+		if (curPlayer == 'A') {
+			for (int i = 0; i < 6; i++) {
+				v1 = minValue(curPlayer, i, depthLimit - 1,alpha,beta);
+				if (v1 > v) {
+					v = v1;
+					bestMulde = i;
+
+				}
+			}
+		}
+
+		if (curPlayer == 'B') {
+			for (int i = 7; i < 13; i++) {
+				v1 = minValue(curPlayer, i, depthLimit - 1,alpha,beta);
+				if (v1 > v) {
+					v = v1;
+					bestMulde = i;
+					alpha = Math.max(alpha,v);
+				}
+			}
+		}
+		return bestMulde;
+
+	}
+
+	private int maxValue(char curPlayer, int mulde, int limit,int alpha,int beta) {
 		if (isFinished() || limit == 0) {
 			return evaluateSituation(mulde);
 		}
@@ -440,7 +476,7 @@ public class KalahBoard {
 		int temp = 0;
 		if (curPlayer == 'A') {
 			for (int i = 0; i < 6; i++) {
-				temp = minValue(curPlayer, i, limit - 1);
+				temp = minValue(curPlayer, i, limit - 1,alpha,beta);
 				if (temp > v) {
 					v = temp;
 				}
@@ -449,8 +485,38 @@ public class KalahBoard {
 
 		if (curPlayer == 'B') {
 			for (int i = 7; i < 13; i++) {
-				temp = minValue(curPlayer, i, limit - 1);
+				temp = minValue(curPlayer, i, limit - 1,alpha,beta);
 				if (temp > v) {
+					v = temp;
+				}
+			}
+		}
+		return v;
+	}
+
+	private int minValue(char curPlayer, int mulde, int limit, int alpha, int beta) {
+		if (isFinished() || limit == 0) {
+			return evaluateSituation(mulde);
+		}
+		int v = Integer.MAX_VALUE;
+		int temp = 0;
+		if (curPlayer == 'A') {
+			for (int i = 0; i < 6; i++) {
+				temp = maxValue(curPlayer, i, limit - 1,alpha,beta);
+				if (temp < v) {
+					v = temp;
+					if (v<=alpha){
+						return v;
+					}
+					beta = Math.min(beta,v);
+				}
+			}
+		}
+
+		if (curPlayer == 'B') {
+			for (int i = 7; i < 13; i++) {
+				temp = maxValue(curPlayer, i, limit - 1,alpha,beta);
+				if (temp < v) {
 					v = temp;
 				}
 			}
@@ -469,13 +535,17 @@ public class KalahBoard {
 				temp = maxValue(curPlayer, i, limit - 1);
 				if (temp < v) {
 					v = temp;
+					if (v<=alpha){
+						return v;
+					}
+					beta = Math.min(beta,v);
 				}
 			}
 		}
 
 		if (curPlayer == 'B') {
 			for (int i = 7; i < 13; i++) {
-				temp = maxValue(curPlayer, i, limit - 1);
+				temp = maxValue(curPlayer, i, limit - 1,alpha,beta);
 				if (temp < v) {
 					v = temp;
 				}

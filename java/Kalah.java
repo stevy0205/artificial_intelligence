@@ -1,5 +1,4 @@
-package kalah;
-
+package kalah.java;
 /**
  * Hauptprogramm für KalahMuster.
  * @since 29.3.2021
