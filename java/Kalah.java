@@ -59,11 +59,14 @@ public class Kalah {
 		kalahBd.print();
 
 		while (!kalahBd.isFinished()) {
-			if(curPlayer = 'A'){
-				System.out.println("Bester Move: " + maxAction('A', 5));
+			if(kalahBd.curPlayer == 'A'){
+				System.out.println("Bester Move MinMax: " + kalahBd.maxAction('A',5));
+				System.out.println("Bester Move Alpha-Beta: " + kalahBd.alphaBetaSearch('A',5));
 			}
-			if(curPlayer = 'B'){
-				System.out.println("Bester Move: " + maxAction('B', 5));
+			if(kalahBd.curPlayer == 'B'){
+				System.out.println("Bester Move MinMax: " + kalahBd.maxAction('B', 5));
+				System.out.println("Bester Move Alpha-Beta: " + kalahBd.alphaBetaSearch('B',5));
+
 			}
 			int action = kalahBd.readAction();
 			kalahBd.move(action);

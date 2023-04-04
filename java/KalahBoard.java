@@ -36,7 +36,7 @@ public class KalahBoard {
 	private int[] board = new int[SIZE];
 	
 	// Aktueller Spieler, ist mit dem nächsten Zug dran
-	private char curPlayer; // noch nicht festgelegt
+	char curPlayer; // noch nicht festgelegt
 	
 	// Ist nächster Zug ein Bonus-Zug.
 	// bonus wird gesetzt, nachdem move(m) ausgeführt wurde
@@ -399,7 +399,11 @@ public class KalahBoard {
 		return 0;
 	}
 
-	private int maxAction(char curPlayer, int depthLimit) {
+	public int maxAction(char curPlayer, int depthLimit) {
+		//CopyBoard um Schritte zu simulieren
+		KalahBoard copyBoard = new KalahBoard();
+		copyBoard.board = this.board.clone();
+
 		int v = Integer.MIN_VALUE;
 		int v1 = 0;
 		int bestMulde = -1;
@@ -409,7 +413,7 @@ public class KalahBoard {
 
 		if (curPlayer == 'A') {
 			for (int i = 0; i < 6; i++) {
-				v1 = minValue(curPlayer, i, depthLimit - 1);
+				v1 = minValue(curPlayer, i, depthLimit - 1,copyBoard);
 				if (v1 > v) {
 					v = v1;
 					bestMulde = i;
@@ -420,7 +424,7 @@ public class KalahBoard {
 
 		if (curPlayer == 'B') {
 			for (int i = 7; i < 13; i++) {
-				v1 = minValue(curPlayer, i, depthLimit - 1,null,null);
+				v1 = minValue(curPlayer, i, depthLimit - 1,copyBoard);
 				if (v1 > v) {
 					v = v1;
 					bestMulde = i;
@@ -430,7 +434,11 @@ public class KalahBoard {
 		return bestMulde;
 	}
 
-	private int alphaBetaSearch(char curPlayer, int depthLimit){
+	public int alphaBetaSearch(char curPlayer, int depthLimit){
+		//CopyBoard um Schritte zu simulieren
+		KalahBoard copyBoard = new KalahBoard();
+		copyBoard.board = this.board.clone();
+
 		int alpha = Integer.MIN_VALUE;
 		int beta = Integer.MAX_VALUE;
 		int v = Integer.MIN_VALUE;
@@ -442,7 +450,7 @@ public class KalahBoard {
 
 		if (curPlayer == 'A') {
 			for (int i = 0; i < 6; i++) {
-				v1 = minValue(curPlayer, i, depthLimit - 1,alpha,beta);
+				v1 = minValue(curPlayer, i, depthLimit - 1,copyBoard,alpha,beta);
 				if (v1 > v) {
 					v = v1;
 					bestMulde = i;
@@ -453,7 +461,7 @@ public class KalahBoard {
 
 		if (curPlayer == 'B') {
 			for (int i = 7; i < 13; i++) {
-				v1 = minValue(curPlayer, i, depthLimit - 1,alpha,beta);
+				v1 = minValue(curPlayer, i, depthLimit - 1,copyBoard,alpha,beta);
 				if (v1 > v) {
 					v = v1;
 					bestMulde = i;
@@ -475,7 +483,7 @@ public class KalahBoard {
 		if (curPlayer == 'A') {
 			for (int i = 0; i < 6; i++) {
 				copyBoard.move(i);						//Move für Mulde i
-				temp = minValue(curPlayer, i, limit - 1,alpha,beta);
+				temp = minValue(curPlayer, i, limit - 1,copyBoard,alpha,beta);
 				copyBoard.board = currentState;			//Setze den Move zurück
 				if (temp > v) {
 					v = temp;
@@ -490,7 +498,7 @@ public class KalahBoard {
 		if (curPlayer == 'B') {
 			for (int i = 7; i < 13; i++) {
 				copyBoard.move(i);						//Move für Mulde i
-				temp = minValue(curPlayer, i, limit - 1,alpha,beta);
+				temp = minValue(curPlayer, i, limit - 1,copyBoard,alpha,beta);
 				copyBoard.board = currentState;			//Setze den Move zurück
 				if (temp > v) {
 					v = temp;
@@ -515,7 +523,7 @@ public class KalahBoard {
 		if (curPlayer == 'A') {
 			for (int i = 0; i < 6; i++) {
 				copyBoard.move(i);						//Move für Mulde i
-				temp = maxValue(curPlayer, i, limit - 1,alpha,beta);
+				temp = maxValue(curPlayer, i, limit - 1,copyBoard,alpha,beta);
 				copyBoard.board = currentState;			//Setze den Move zurück
 				if (temp < v) {
 					v = temp;
@@ -530,7 +538,7 @@ public class KalahBoard {
 		if (curPlayer == 'B') {
 			for (int i = 7; i < 13; i++) {
 				copyBoard.move(i);						//Move für Mulde i
-				temp = maxValue(curPlayer, i, limit - 1,alpha,beta);
+				temp = maxValue(curPlayer, i, limit - 1,copyBoard,alpha,beta);
 				copyBoard.board = currentState;			//Setze den Move zurück
 				if (temp < v) {
 					v = temp;
