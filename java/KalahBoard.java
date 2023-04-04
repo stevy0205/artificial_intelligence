@@ -12,7 +12,7 @@ import java.util.Scanner;
  */
 public class KalahBoard {
 
-	private static int limit = 5;
+	private static int limit = 8;
 	/**
 	 * Problemgröße
 	 */
@@ -53,6 +53,9 @@ public class KalahBoard {
 	// Konsolen-Ein/Ausgabe:
 	private static Scanner in = new Scanner(System.in);
 	private static final String ANSI_BLUE = "\u001B[34m";
+
+	public static int minMaxCount = 0;
+	public static int alphaBetaCount = 0;
 	
 	/**
 	 *	Konstruktor.
@@ -384,233 +387,329 @@ public class KalahBoard {
 		return -1;
 	}
 	
-	private int evaluateSituation(int mulde, KalahBoard copyBoard){
+	private int evaluateSituation(KalahBoard copyBoard){
 		if(curPlayer=='A'){
 			return copyBoard.board[AKalah]-copyBoard.board[BKalah];
 		} else if(curPlayer=='B'){
 			return copyBoard.board[BKalah]-copyBoard.board[AKalah];
 		}
-		/*if(mulde>=0 && mulde<=5) spieler = 6;
-		else if(mulde>=7&&mulde<=13) spieler = 13;
-		int pointsBeforeMove = board[spieler];
-		move(mulde);
-		int pointsAfterMove = board[spieler];
-		return pointsAfterMove-pointsBeforeMove;*/
 		return 0;
 	}
 
-	public int maxAction(char curPlayer, int depthLimit) {
-		//CopyBoard um Schritte zu simulieren
-		KalahBoard copyBoard = new KalahBoard();
-		copyBoard.board = this.board.clone();
 
-		int v = Integer.MIN_VALUE;
-		int v1 = 0;
-		int bestMulde = -1;
-		if (isFinished()) {
-			return -1;
-		}
-
-		if (curPlayer == 'A') {
-			for (int i = 0; i < 6; i++) {
-				v1 = minValue(curPlayer, i, depthLimit - 1,copyBoard);
-				if (v1 > v) {
-					v = v1;
-					bestMulde = i;
-
-				}
-			}
-		}
-
-		if (curPlayer == 'B') {
-			for (int i = 7; i < 13; i++) {
-				v1 = minValue(curPlayer, i, depthLimit - 1,copyBoard);
-				if (v1 > v) {
-					v = v1;
-					bestMulde = i;
-				}
-			}
-		}
-		return bestMulde;
-	}
 
 	public int alphaBetaSearch(char curPlayer, int depthLimit){
-		//CopyBoard um Schritte zu simulieren
-		KalahBoard copyBoard = new KalahBoard();
-		copyBoard.board = this.board.clone();
-
+		alphaBetaCount = 0;
 		int alpha = Integer.MIN_VALUE;
 		int beta = Integer.MAX_VALUE;
 		int v = Integer.MIN_VALUE;
-		int v1 = 0;
-		int bestMulde = -1;
+		int v1;
+		int bestMulde = -2;
 		if (isFinished()) {
 			return -1;
 		}
 
 		if (curPlayer == 'A') {
-			for (int i = 0; i < 6; i++) {
-				v1 = minValue(curPlayer, i, depthLimit - 1,copyBoard,alpha,beta);
-				if (v1 > v) {
-					v = v1;
-					bestMulde = i;
-
+			for (KalahBoard nextBoard : possibleActions()) {
+				if (nextBoard.isBonus()) {
+					v1 = maxValue('A', limit, nextBoard, alpha, beta);
+					if (v1 > v) {
+						v = v1;
+						bestMulde = nextBoard.getLastPlay();
+					}
+					alpha = Math.max(alpha,v);
+				} else {
+					v1 = minValue('A', limit, nextBoard, alpha, beta);
+					if (v1 > v) {
+						v = v1;
+						bestMulde = nextBoard.getLastPlay();
+					}
+					alpha = Math.max(alpha,v);
 				}
 			}
 		}
 
 		if (curPlayer == 'B') {
-			for (int i = 7; i < 13; i++) {
-				v1 = minValue(curPlayer, i, depthLimit - 1,copyBoard,alpha,beta);
-				if (v1 > v) {
-					v = v1;
-					bestMulde = i;
+			for (KalahBoard nextBoard : possibleActions()) {
+				if (nextBoard.isBonus()) {
+					v1 = maxValue('B', limit, nextBoard, alpha, beta);
+					if (v1 > v) {
+						v = v1;
+						bestMulde = nextBoard.getLastPlay();
+					}
+					alpha = Math.max(alpha,v);
+				} else {
+					v1 = minValue('B', limit, nextBoard, alpha, beta);
+					if (v1 > v) {
+						v = v1;
+						bestMulde = nextBoard.getLastPlay();
+					}
 					alpha = Math.max(alpha,v);
 				}
 			}
+
 		}
 		return bestMulde;
-
 	}
 
-	private int maxValue(char curPlayer, int mulde, int limit, KalahBoard copyBoard ,int alpha,int beta) {
+	private int maxValue(char curPlayer, int limit, KalahBoard board ,int alpha,int beta) {
+		alphaBetaCount++;
 		if (isFinished() || limit == 0) {
-			return evaluateSituation(mulde, copyBoard);
+			return evaluateSituation(board);
 		}
-		int[] currentState = copyBoard.board.clone();	//Erstelle eine Copy von dem Board vor den Moves
 		int v = Integer.MIN_VALUE;
-		int temp = 0;
+		int v1 = 0;
 		if (curPlayer == 'A') {
-			for (int i = 0; i < 6; i++) {
-				copyBoard.move(i);						//Move für Mulde i
-				temp = minValue(curPlayer, i, limit - 1,copyBoard,alpha,beta);
-				copyBoard.board = currentState;			//Setze den Move zurück
-				if (temp > v) {
-					v = temp;
-					if (v>=beta){
-						return v;
+			for (KalahBoard nextBoard : board.possibleActions()) {
+				if (nextBoard.isBonus()) {
+					v1 = maxValue('A', limit-1, nextBoard, alpha, beta);
+					if (v1 > v) {
+						v = v1;
+						if(v>=beta){
+							return v;
+						}
+						alpha = Math.max(alpha,v);
 					}
-					alpha = Math.max(alpha,v);
+				} else {
+					v1 = minValue('A', limit-1, nextBoard,alpha,beta);
+					if (v1 > v) {
+						v = v1;
+						if(v>=beta){
+							return v;
+						}
+						alpha = Math.max(alpha,v);
+					}
+
 				}
 			}
 		}
 
 		if (curPlayer == 'B') {
-			for (int i = 7; i < 13; i++) {
-				copyBoard.move(i);						//Move für Mulde i
-				temp = minValue(curPlayer, i, limit - 1,copyBoard,alpha,beta);
-				copyBoard.board = currentState;			//Setze den Move zurück
-				if (temp > v) {
-					v = temp;
-					if (v>=beta){
-						return v;
+
+			for (KalahBoard nextBoard : board.possibleActions()) {
+				if (nextBoard.isBonus()) {
+					v1 = maxValue('B', limit-1, nextBoard, alpha, beta);
+					if (v1 > v) {
+						v = v1;
+						if(v>=beta){
+							return v;
+						}
+						alpha = Math.max(alpha,v);
 					}
-					alpha = Math.max(alpha,v);
+				} else {
+					v1 = minValue('A', limit-1, nextBoard, alpha, beta);
+					if (v1 > v) {
+						v = v1;
+						if(v>=beta){
+							return v;
+						}
+						alpha = Math.max(alpha,v);
+					}
+
 				}
 			}
 		}
+
 		return v;
 	}
 
 
-	private int minValue(char curPlayer, int mulde, int limit, KalahBoard copyBoard, int alpha, int beta) {
+	private int minValue(char curPlayer, int limit, KalahBoard board, int alpha, int beta) {
+		alphaBetaCount++;
 		if (isFinished() || limit == 0) {
-			return evaluateSituation(mulde, copyBoard);
+			return evaluateSituation(board);
 		}
-		int[] currentState = copyBoard.board.clone();	//Erstelle eine Copy von dem Board vor den Moves
 		int v = Integer.MAX_VALUE;
-		int temp = 0;
+		int v1 = 0;
 		if (curPlayer == 'A') {
-			for (int i = 0; i < 6; i++) {
-				copyBoard.move(i);						//Move für Mulde i
-				temp = maxValue(curPlayer, i, limit - 1,copyBoard,alpha,beta);
-				copyBoard.board = currentState;			//Setze den Move zurück
-				if (temp < v) {
-					v = temp;
-					if (v<=alpha){
-						return v;
+			for (KalahBoard nextBoard : board.possibleActions()) {
+				if (nextBoard.isBonus()) {
+					v1 = minValue('A', limit-1, nextBoard, alpha, beta);
+					if (v1 < v) {
+						v = v1;
+						if(v<=alpha){
+							return v;
+						}
+						beta = Math.min(beta,v);
 					}
-					beta = Math.min(beta,v);
+				} else {
+					v1 = maxValue('A', limit-1, nextBoard, alpha, beta);
+					if (v1 < v) {
+						v = v1;
+						if(v<=alpha){
+							return v;
+						}
+						beta = Math.min(beta,v);
+					}
+
 				}
 			}
 		}
 
 		if (curPlayer == 'B') {
-			for (int i = 7; i < 13; i++) {
-				copyBoard.move(i);						//Move für Mulde i
-				temp = maxValue(curPlayer, i, limit - 1,copyBoard,alpha,beta);
-				copyBoard.board = currentState;			//Setze den Move zurück
-				if (temp < v) {
-					v = temp;
-					if (v<=alpha){
-						return v;
+			for (KalahBoard nextBoard : board.possibleActions()) {
+				if (nextBoard.isBonus()) {
+					v1 = minValue('B', limit-1, nextBoard, alpha, beta);
+					if (v1 < v) {
+						v = v1;
+						if(v<=alpha){
+							return v;
+						}
+						beta = Math.min(beta,v);
 					}
-					beta = Math.min(beta,v);
+				} else {
+					v1 = maxValue('B', limit-1, nextBoard, alpha, beta);
+					if (v1 < v) {
+						v = v1;
+						if(v<=alpha){
+							return v;
+						}
+						beta = Math.min(beta,v);
+					}
+
+				}
+			}
+		}
+
+		return v;
+	}
+
+
+
+
+	public int maxAction(char curPlayer,int depthlimit) {
+		minMaxCount = 0;
+		int v = Integer.MIN_VALUE;
+		int v1;
+		int bestMulde = -2;
+		if (isFinished()) {
+			return -1;
+		}
+
+		if (curPlayer == 'A') {
+			for (KalahBoard nextBoard : possibleActions()) {
+				if (nextBoard.isBonus()) {
+					v1 = maxValue('A', limit, nextBoard);
+					if (v1 > v) {
+						v = v1;
+						bestMulde = nextBoard.getLastPlay();
+					}
+				} else {
+					v1 = minValue('A', limit, nextBoard);
+					if (v1 > v) {
+						v = v1;
+						bestMulde = nextBoard.getLastPlay();
+					}
+
+				}
+			}
+		}
+
+		if (curPlayer == 'B') {
+			for (KalahBoard nextBoard : possibleActions()) {
+				if (nextBoard.isBonus()) {
+					v1 = maxValue('B', limit, nextBoard);
+					if (v1 > v) {
+						v = v1;
+						bestMulde = nextBoard.getLastPlay();
+					}
+				} else {
+					v1 = minValue('B', limit, nextBoard);
+					if (v1 > v) {
+						v = v1;
+						bestMulde = nextBoard.getLastPlay();
+					}
+
+				}
+			}
+
+		}
+		return bestMulde;
+	}
+	//ohne alpha-beta
+	private int maxValue(char curPlayer, int limit, KalahBoard board) {
+		minMaxCount++;
+		if (isFinished() || limit == 0) {
+			return evaluateSituation(board);
+		}
+		int v = Integer.MIN_VALUE;
+		int v1 = 0;
+
+
+		if (curPlayer == 'A') {
+			for (KalahBoard nextBoard : board.possibleActions()) {
+				if (nextBoard.isBonus()) {
+					v1 = maxValue('A', limit-1, nextBoard);
+					if (v1 > v) {
+						v = v1;
+					}
+				} else {
+					v1 = minValue('A', limit-1, nextBoard);
+					if (v1 > v) {
+						v = v1;
+					}
+
+				}
+			}
+		}
+
+		if (curPlayer == 'B') {
+			for (KalahBoard nextBoard : board.possibleActions()) {
+				if (nextBoard.isBonus()) {
+					v1 = maxValue('B', limit-1, nextBoard);
+					if (v1 > v) {
+						v = v1;
+					}
+				} else {
+					v1 = minValue('B', limit-1, nextBoard);
+					if (v1 > v) {
+						v = v1;
+					}
+
 				}
 			}
 		}
 		return v;
 	}
-
 
 	//ohne alpha-beta
-	private int maxValue(char curPlayer, int mulde, int limit, KalahBoard copyBoard) {
+	private int minValue(char curPlayer, int limit, KalahBoard board) {
+		minMaxCount++;
 		if (isFinished() || limit == 0) {
-			return evaluateSituation(mulde, copyBoard);
+			return evaluateSituation(board);
 		}
-		int[] currentState = copyBoard.board.clone();	//Erstelle eine Copy von dem Board vor den Moves
-		int v = Integer.MIN_VALUE;
-		int temp = 0;
-		if (curPlayer == 'A') {
-			for (int i = 0; i < 6; i++) {
-				copyBoard.move(i);						//Move für Mulde i
-				temp = minValue(curPlayer, i, limit - 1, copyBoard);
-				copyBoard.board = currentState;			//Setze den Move zurück
-				if (temp > v) {
-					v = temp;
-				}
-			}
-		}
-
-		if (curPlayer == 'B') {
-			for (int i = 7; i < 13; i++) {
-				copyBoard.move(i);						//Move für Mulde i
-				temp = minValue(curPlayer, i, limit - 1,copyBoard);
-				copyBoard.board = currentState;			//Setze den Move zurück
-				if (temp > v) {
-					v = temp;
-				}
-			}
-		}
-		return v;
-	}
-
-	//ohne alpha-beta
-	private int minValue(char curPlayer, int mulde, int limit, KalahBoard copyBoard) {
-		if (isFinished() || limit == 0) {
-			return evaluateSituation(mulde, copyBoard);
-		}
-		int[] currentState = copyBoard.board.clone();	//Erstelle eine Copy von dem Board vor den Moves
+		int[] currentState = board.board.clone();	//Erstelle eine Copy von dem Board vor den Moves
 		int v = Integer.MAX_VALUE;
-		int temp = 0;
+		int v1 = 0;
 		if (curPlayer == 'A') {
-			for (int i = 0; i < 6; i++) {
-				copyBoard.move(i);						//Move für Mulde i
-				temp = maxValue(curPlayer, i, limit - 1, copyBoard);
-				copyBoard.board = currentState;			//Setze den Move zurück
-				if (temp < v) {
-					v = temp;
+			for (KalahBoard nextBoard : board.possibleActions()) {
+				if (nextBoard.isBonus()) {
+					v1 = minValue('A', limit-1, nextBoard);
+					if (v1 < v) {
+						v = v1;
+					}
+				} else {
+					v1 = maxValue('A', limit-1, nextBoard);
+					if (v1 < v) {
+						v = v1;
+					}
 				}
 			}
 		}
 
 		if (curPlayer == 'B') {
-			for (int i = 7; i < 13; i++) {
-				copyBoard.move(i);						//Move für Mulde i
-				temp = maxValue(curPlayer, i, limit - 1,copyBoard);
-				copyBoard.board = currentState;			//Setze den Move zurück
-				if (temp < v) {
-					v = temp;
+			for (KalahBoard nextBoard : board.possibleActions()) {
+				if (nextBoard.isBonus()) {
+					v1 = minValue('B', limit-1, nextBoard);
+					if (v1 < v) {
+						v = v1;
+					}
+				} else {
+					v1 = maxValue('B', limit-1, nextBoard);
+					if (v1 < v) {
+						v = v1;
+					}
+
 				}
 			}
 		}

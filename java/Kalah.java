@@ -14,8 +14,9 @@ public class Kalah {
 	 */
 	public static void main(String[] args) {
 		//testExample();
-		testHAGame();
+		//testHAGame();
 		//testHHGame();
+		testMiniMaxAndAlphaBetaWithGivenBoard();
 	}
 	
 	/**
@@ -76,4 +77,29 @@ public class Kalah {
 		System.out.println("\n" + ANSI_BLUE + "GAME OVER");
 		
 	 }
+
+
+
+	public static void testMiniMaxAndAlphaBetaWithGivenBoard() {
+		KalahBoard kalahBd = new KalahBoard(new int[]{2, 0, 4, 3, 2, 0, 0, 1, 0, 1, 3, 2, 1, 0}, 'A');
+		// A ist am Zug und kann aufgrund von Bonuszügen 8-aml hintereinander ziehen!
+		// A muss deutlich gewinnen!
+		kalahBd.print();
+
+		while (!kalahBd.isFinished()) {
+			int action;
+			if (kalahBd.getCurPlayer() == 'A') {
+				System.out.println("Best Move alphaBeta: " + kalahBd.alphaBetaSearch('A',5));
+				System.out.println("This turn took "+KalahBoard.alphaBetaCount + " alpha/beta turns");
+				System.out.println("Best Move MinMax: " + kalahBd.maxAction('A',5));
+				System.out.println("This turn took "+KalahBoard.minMaxCount + " Min/Max turns");
+			}
+			action = kalahBd.readAction();
+			kalahBd.move(action);
+			kalahBd.print();
+
+		}
+
+		System.out.println("\n" + ANSI_BLUE + "GAME OVER");
+	}
 }
