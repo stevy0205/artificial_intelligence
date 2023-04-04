@@ -14,7 +14,8 @@ public class Kalah {
 	 */
 	public static void main(String[] args) {
 		//testExample();
-		testHHGame();
+		testHAGame();
+		//testHHGame();
 	}
 	
 	/**
@@ -48,4 +49,28 @@ public class Kalah {
 
 		System.out.println("\n" + ANSI_BLUE + "GAME OVER");
 	}
+
+	/**
+	 * Mensch gegen AI
+	 */
+
+	 public static void testHAGame() {
+		KalahBoard kalahBd = new KalahBoard();
+		kalahBd.print();
+
+		while (!kalahBd.isFinished()) {
+			if(curPlayer = 'A'){
+				System.out.println("Bester Move: " + maxAction('A', 5));
+			}
+			if(curPlayer = 'B'){
+				System.out.println("Bester Move: " + maxAction('B', 5));
+			}
+			int action = kalahBd.readAction();
+			kalahBd.move(action);
+			kalahBd.print();
+		}
+
+		System.out.println("\n" + ANSI_BLUE + "GAME OVER");
+		
+	 }
 }

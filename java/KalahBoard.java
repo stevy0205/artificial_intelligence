@@ -384,14 +384,11 @@ public class KalahBoard {
 		return -1;
 	}
 	
-	private int evaluateSituation(int mulde){
-		KalahBoard copyBoard = new KalahBoard();
-		copyBoard.board = this.board.clone();
-		copyBoard.move(mulde);
+	private int evaluateSituation(int mulde, KalahBoard copyBoard){
 		if(curPlayer=='A'){
 			return copyBoard.board[AKalah]-copyBoard.board[BKalah];
 		} else if(curPlayer=='B'){
-			return copyBoard.board[AKalah]-copyBoard.board[BKalah];
+			return copyBoard.board[BKalah]-copyBoard.board[AKalah];
 		}
 		/*if(mulde>=0 && mulde<=5) spieler = 6;
 		else if(mulde>=7&&mulde<=13) spieler = 13;
@@ -468,41 +465,58 @@ public class KalahBoard {
 
 	}
 
-	private int maxValue(char curPlayer, int mulde, int limit,int alpha,int beta) {
+	private int maxValue(char curPlayer, int mulde, int limit, KalahBoard copyBoard ,int alpha,int beta) {
 		if (isFinished() || limit == 0) {
-			return evaluateSituation(mulde);
+			return evaluateSituation(mulde, copyBoard);
 		}
+		int[] currentState = copyBoard.board.clone();	//Erstelle eine Copy von dem Board vor den Moves
 		int v = Integer.MIN_VALUE;
 		int temp = 0;
 		if (curPlayer == 'A') {
 			for (int i = 0; i < 6; i++) {
+				copyBoard.move(i);						//Move für Mulde i
 				temp = minValue(curPlayer, i, limit - 1,alpha,beta);
+				copyBoard.board = currentState;			//Setze den Move zurück
 				if (temp > v) {
 					v = temp;
+					if (v>=beta){
+						return v;
+					}
+					alpha = Math.max(alpha,v);
 				}
 			}
 		}
 
 		if (curPlayer == 'B') {
 			for (int i = 7; i < 13; i++) {
+				copyBoard.move(i);						//Move für Mulde i
 				temp = minValue(curPlayer, i, limit - 1,alpha,beta);
+				copyBoard.board = currentState;			//Setze den Move zurück
 				if (temp > v) {
 					v = temp;
+					if (v>=beta){
+						return v;
+					}
+					alpha = Math.max(alpha,v);
 				}
 			}
 		}
 		return v;
 	}
 
-	private int minValue(char curPlayer, int mulde, int limit, int alpha, int beta) {
+
+	private int minValue(char curPlayer, int mulde, int limit, KalahBoard copyBoard, int alpha, int beta) {
 		if (isFinished() || limit == 0) {
-			return evaluateSituation(mulde);
+			return evaluateSituation(mulde, copyBoard);
 		}
+		int[] currentState = copyBoard.board.clone();	//Erstelle eine Copy von dem Board vor den Moves
 		int v = Integer.MAX_VALUE;
 		int temp = 0;
 		if (curPlayer == 'A') {
 			for (int i = 0; i < 6; i++) {
+				copyBoard.move(i);						//Move für Mulde i
 				temp = maxValue(curPlayer, i, limit - 1,alpha,beta);
+				copyBoard.board = currentState;			//Setze den Move zurück
 				if (temp < v) {
 					v = temp;
 					if (v<=alpha){
@@ -515,24 +529,9 @@ public class KalahBoard {
 
 		if (curPlayer == 'B') {
 			for (int i = 7; i < 13; i++) {
+				copyBoard.move(i);						//Move für Mulde i
 				temp = maxValue(curPlayer, i, limit - 1,alpha,beta);
-				if (temp < v) {
-					v = temp;
-				}
-			}
-		}
-		return v;
-	}
-
-	private int minValue(char curPlayer, int mulde, int limit) {
-		if (isFinished() || limit == 0) {
-			return evaluateSituation(mulde);
-		}
-		int v = Integer.MAX_VALUE;
-		int temp = 0;
-		if (curPlayer == 'A') {
-			for (int i = 0; i < 6; i++) {
-				temp = maxValue(curPlayer, i, limit - 1);
+				copyBoard.board = currentState;			//Setze den Move zurück
 				if (temp < v) {
 					v = temp;
 					if (v<=alpha){
@@ -542,10 +541,66 @@ public class KalahBoard {
 				}
 			}
 		}
+		return v;
+	}
+
+
+	//ohne alpha-beta
+	private int maxValue(char curPlayer, int mulde, int limit, KalahBoard copyBoard) {
+		if (isFinished() || limit == 0) {
+			return evaluateSituation(mulde, copyBoard);
+		}
+		int[] currentState = copyBoard.board.clone();	//Erstelle eine Copy von dem Board vor den Moves
+		int v = Integer.MIN_VALUE;
+		int temp = 0;
+		if (curPlayer == 'A') {
+			for (int i = 0; i < 6; i++) {
+				copyBoard.move(i);						//Move für Mulde i
+				temp = minValue(curPlayer, i, limit - 1, copyBoard);
+				copyBoard.board = currentState;			//Setze den Move zurück
+				if (temp > v) {
+					v = temp;
+				}
+			}
+		}
 
 		if (curPlayer == 'B') {
 			for (int i = 7; i < 13; i++) {
-				temp = maxValue(curPlayer, i, limit - 1,alpha,beta);
+				copyBoard.move(i);						//Move für Mulde i
+				temp = minValue(curPlayer, i, limit - 1,copyBoard);
+				copyBoard.board = currentState;			//Setze den Move zurück
+				if (temp > v) {
+					v = temp;
+				}
+			}
+		}
+		return v;
+	}
+
+	//ohne alpha-beta
+	private int minValue(char curPlayer, int mulde, int limit, KalahBoard copyBoard) {
+		if (isFinished() || limit == 0) {
+			return evaluateSituation(mulde, copyBoard);
+		}
+		int[] currentState = copyBoard.board.clone();	//Erstelle eine Copy von dem Board vor den Moves
+		int v = Integer.MAX_VALUE;
+		int temp = 0;
+		if (curPlayer == 'A') {
+			for (int i = 0; i < 6; i++) {
+				copyBoard.move(i);						//Move für Mulde i
+				temp = maxValue(curPlayer, i, limit - 1, copyBoard);
+				copyBoard.board = currentState;			//Setze den Move zurück
+				if (temp < v) {
+					v = temp;
+				}
+			}
+		}
+
+		if (curPlayer == 'B') {
+			for (int i = 7; i < 13; i++) {
+				copyBoard.move(i);						//Move für Mulde i
+				temp = maxValue(curPlayer, i, limit - 1,copyBoard);
+				copyBoard.board = currentState;			//Setze den Move zurück
 				if (temp < v) {
 					v = temp;
 				}
