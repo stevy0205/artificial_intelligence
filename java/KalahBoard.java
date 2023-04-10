@@ -386,7 +386,12 @@ public class KalahBoard {
 		}
 		return -1;
 	}
-	
+
+	/**
+	 * Bewertet den Zustand eines Boards
+	 * @param copyBoard Das Board welches Bewertet werden soll
+	 * @return Differnez der Mulden
+	 */
 	private int evaluateSituation(KalahBoard copyBoard){
 		if(curPlayer=='A'){
 			return copyBoard.board[AKalah]-copyBoard.board[BKalah];
@@ -397,8 +402,11 @@ public class KalahBoard {
 	}
 
 
-
-	public int alphaBetaSearch(char curPlayer, int depthLimit){
+	/**
+	 * Start der Rekursion ohne Alpha-Beta
+	 * @return Nummer der Mulde mit dem besten Zug
+	 */
+	public int alphaBetaSearch(){
 		alphaBetaCount = 0;
 		int alpha = Integer.MIN_VALUE;
 		int beta = Integer.MAX_VALUE;
@@ -409,175 +417,116 @@ public class KalahBoard {
 			return -1;
 		}
 
-		if (curPlayer == 'A') {
-			for (KalahBoard nextBoard : possibleActions()) {
-				if (nextBoard.isBonus()) {
-					v1 = maxValue('A', limit, nextBoard, alpha, beta);
-					if (v1 > v) {
-						v = v1;
-						bestMulde = nextBoard.getLastPlay();
-					}
-					alpha = Math.max(alpha,v);
-				} else {
-					v1 = minValue('A', limit, nextBoard, alpha, beta);
-					if (v1 > v) {
-						v = v1;
-						bestMulde = nextBoard.getLastPlay();
-					}
-					alpha = Math.max(alpha,v);
-				}
-			}
-		}
 
-		if (curPlayer == 'B') {
-			for (KalahBoard nextBoard : possibleActions()) {
-				if (nextBoard.isBonus()) {
-					v1 = maxValue('B', limit, nextBoard, alpha, beta);
-					if (v1 > v) {
-						v = v1;
-						bestMulde = nextBoard.getLastPlay();
-					}
-					alpha = Math.max(alpha,v);
-				} else {
-					v1 = minValue('B', limit, nextBoard, alpha, beta);
-					if (v1 > v) {
-						v = v1;
-						bestMulde = nextBoard.getLastPlay();
-					}
-					alpha = Math.max(alpha,v);
+		for (KalahBoard nextBoard : possibleActions()) {
+			if (nextBoard.isBonus()) {
+				v1 = maxValue(limit, nextBoard, alpha, beta);
+				if (v1 > v) {
+					v = v1;
+					bestMulde = nextBoard.getLastPlay();
 				}
+				alpha = Math.max(alpha,v);
+			} else {
+				v1 = minValue(limit, nextBoard, alpha, beta);
+				if (v1 > v) {
+					v = v1;
+					bestMulde = nextBoard.getLastPlay();
+				}
+				alpha = Math.max(alpha,v);
 			}
-
 		}
 		return bestMulde;
 	}
 
-	private int maxValue(char curPlayer, int limit, KalahBoard board ,int alpha,int beta) {
+
+	/**
+	 * Mit Alpha-Beta
+	 * @param limit Tiefe der Rekursion
+	 * @param board Board das Bewertet wird
+	 * @param alpha Alpha Wert
+	 * @param beta	Beta Wert
+	 * @return Differenz von Mulden
+	 */
+	private int maxValue(int limit, KalahBoard board ,int alpha,int beta) {
 		alphaBetaCount++;
 		if (isFinished() || limit == 0) {
 			return evaluateSituation(board);
 		}
 		int v = Integer.MIN_VALUE;
 		int v1 = 0;
-		if (curPlayer == 'A') {
-			for (KalahBoard nextBoard : board.possibleActions()) {
-				if (nextBoard.isBonus()) {
-					v1 = maxValue('A', limit-1, nextBoard, alpha, beta);
-					if (v1 > v) {
-						v = v1;
-						if(v>=beta){
-							return v;
-						}
-						alpha = Math.max(alpha,v);
-					}
-				} else {
-					v1 = minValue('A', limit-1, nextBoard,alpha,beta);
-					if (v1 > v) {
-						v = v1;
-						if(v>=beta){
-							return v;
-						}
-						alpha = Math.max(alpha,v);
-					}
 
+		for (KalahBoard nextBoard : board.possibleActions()) {
+			if (nextBoard.isBonus()) {
+				v1 = maxValue(limit - 1, nextBoard, alpha, beta);
+				if (v1 > v) {
+					v = v1;
+					if (v >= beta) {
+						return v;
+					}
+					alpha = Math.max(alpha, v);
 				}
+			} else {
+				v1 = minValue(limit - 1, nextBoard, alpha, beta);
+				if (v1 > v) {
+					v = v1;
+					if (v >= beta) {
+						return v;
+					}
+					alpha = Math.max(alpha, v);
+				}
+
 			}
 		}
-
-		if (curPlayer == 'B') {
-
-			for (KalahBoard nextBoard : board.possibleActions()) {
-				if (nextBoard.isBonus()) {
-					v1 = maxValue('B', limit-1, nextBoard, alpha, beta);
-					if (v1 > v) {
-						v = v1;
-						if(v>=beta){
-							return v;
-						}
-						alpha = Math.max(alpha,v);
-					}
-				} else {
-					v1 = minValue('A', limit-1, nextBoard, alpha, beta);
-					if (v1 > v) {
-						v = v1;
-						if(v>=beta){
-							return v;
-						}
-						alpha = Math.max(alpha,v);
-					}
-
-				}
-			}
-		}
-
 		return v;
 	}
 
 
-	private int minValue(char curPlayer, int limit, KalahBoard board, int alpha, int beta) {
+	/**
+	 * Mit Alpha-Beta
+	 * @param limit Tiefe der Rekursion
+	 * @param board Board das Bewertet wird
+	 * @param alpha Alpha Wert
+	 * @param beta	Beta Wert
+	 * @return Differenz von Mulden
+	 */
+	private int minValue(int limit, KalahBoard board, int alpha, int beta) {
 		alphaBetaCount++;
 		if (isFinished() || limit == 0) {
 			return evaluateSituation(board);
 		}
 		int v = Integer.MAX_VALUE;
 		int v1 = 0;
-		if (curPlayer == 'A') {
-			for (KalahBoard nextBoard : board.possibleActions()) {
-				if (nextBoard.isBonus()) {
-					v1 = minValue('A', limit-1, nextBoard, alpha, beta);
-					if (v1 < v) {
-						v = v1;
-						if(v<=alpha){
-							return v;
-						}
-						beta = Math.min(beta,v);
+		for (KalahBoard nextBoard : board.possibleActions()) {
+			if (nextBoard.isBonus()) {
+				v1 = minValue(limit-1, nextBoard, alpha, beta);
+				if (v1 < v) {
+					v = v1;
+					if(v<=alpha){
+						return v;
 					}
-				} else {
-					v1 = maxValue('A', limit-1, nextBoard, alpha, beta);
-					if (v1 < v) {
-						v = v1;
-						if(v<=alpha){
-							return v;
-						}
-						beta = Math.min(beta,v);
-					}
-
+					beta = Math.min(beta,v);
 				}
+			} else {
+				v1 = maxValue(limit-1, nextBoard, alpha, beta);
+				if (v1 < v) {
+					v = v1;
+					if(v<=alpha){
+						return v;
+					}
+					beta = Math.min(beta,v);
+				}
+
 			}
 		}
-
-		if (curPlayer == 'B') {
-			for (KalahBoard nextBoard : board.possibleActions()) {
-				if (nextBoard.isBonus()) {
-					v1 = minValue('B', limit-1, nextBoard, alpha, beta);
-					if (v1 < v) {
-						v = v1;
-						if(v<=alpha){
-							return v;
-						}
-						beta = Math.min(beta,v);
-					}
-				} else {
-					v1 = maxValue('B', limit-1, nextBoard, alpha, beta);
-					if (v1 < v) {
-						v = v1;
-						if(v<=alpha){
-							return v;
-						}
-						beta = Math.min(beta,v);
-					}
-
-				}
-			}
-		}
-
 		return v;
 	}
 
 
-
-
-	public int maxAction(char curPlayer,int depthlimit) {
+	/**
+	 * Start der Rekursion ohne Alpha-Beta
+	 * @return Nummer der Mulde mit dem besten Zug
+	 */
+	public int maxAction() {
 		minMaxCount = 0;
 		int v = Integer.MIN_VALUE;
 		int v1;
@@ -586,94 +535,64 @@ public class KalahBoard {
 			return -1;
 		}
 
-		if (curPlayer == 'A') {
-			for (KalahBoard nextBoard : possibleActions()) {
-				if (nextBoard.isBonus()) {
-					v1 = maxValue('A', limit, nextBoard);
-					if (v1 > v) {
-						v = v1;
-						bestMulde = nextBoard.getLastPlay();
-					}
-				} else {
-					v1 = minValue('A', limit, nextBoard);
-					if (v1 > v) {
-						v = v1;
-						bestMulde = nextBoard.getLastPlay();
-					}
 
+		for (KalahBoard nextBoard : possibleActions()) {
+			if (nextBoard.isBonus()) {
+				v1 = maxValue(limit, nextBoard);
+				if (v1 > v) {
+					v = v1;
+					bestMulde = nextBoard.getLastPlay();
 				}
-			}
-		}
-
-		if (curPlayer == 'B') {
-			for (KalahBoard nextBoard : possibleActions()) {
-				if (nextBoard.isBonus()) {
-					v1 = maxValue('B', limit, nextBoard);
-					if (v1 > v) {
-						v = v1;
-						bestMulde = nextBoard.getLastPlay();
-					}
-				} else {
-					v1 = minValue('B', limit, nextBoard);
-					if (v1 > v) {
-						v = v1;
-						bestMulde = nextBoard.getLastPlay();
-					}
-
+			} else {
+				v1 = minValue(limit, nextBoard);
+				if (v1 > v) {
+					v = v1;
+					bestMulde = nextBoard.getLastPlay();
 				}
-			}
 
+			}
 		}
 		return bestMulde;
 	}
-	//ohne alpha-beta
-	private int maxValue(char curPlayer, int limit, KalahBoard board) {
+
+	/**
+	 * ohne Alpha-Beta
+	 * @param limit Tiefe der Rekursion
+	 * @param board Board das Bewertet wird
+	 * @return Differenz von Mulden
+	 */
+	private int maxValue(int limit, KalahBoard board) {
 		minMaxCount++;
 		if (isFinished() || limit == 0) {
 			return evaluateSituation(board);
 		}
 		int v = Integer.MIN_VALUE;
 		int v1 = 0;
-
-
-		if (curPlayer == 'A') {
-			for (KalahBoard nextBoard : board.possibleActions()) {
-				if (nextBoard.isBonus()) {
-					v1 = maxValue('A', limit-1, nextBoard);
-					if (v1 > v) {
-						v = v1;
-					}
-				} else {
-					v1 = minValue('A', limit-1, nextBoard);
-					if (v1 > v) {
-						v = v1;
-					}
-
+		for (KalahBoard nextBoard : board.possibleActions()) {
+			if (nextBoard.isBonus()) {
+				v1 = maxValue(limit-1, nextBoard);
+				if (v1 > v) {
+					v = v1;
 				}
+			} else {
+				v1 = minValue(limit-1, nextBoard);
+				if (v1 > v) {
+					v = v1;
+				}
+
 			}
 		}
 
-		if (curPlayer == 'B') {
-			for (KalahBoard nextBoard : board.possibleActions()) {
-				if (nextBoard.isBonus()) {
-					v1 = maxValue('B', limit-1, nextBoard);
-					if (v1 > v) {
-						v = v1;
-					}
-				} else {
-					v1 = minValue('B', limit-1, nextBoard);
-					if (v1 > v) {
-						v = v1;
-					}
-
-				}
-			}
-		}
 		return v;
 	}
 
-	//ohne alpha-beta
-	private int minValue(char curPlayer, int limit, KalahBoard board) {
+	/**
+	 * ohne Alpha-Beta
+	 * @param limit Tiefe der Rekursion
+	 * @param board Board das Bewertet wird
+	 * @return Differenz von Mulden
+	 */
+	private int minValue( int limit, KalahBoard board) {
 		minMaxCount++;
 		if (isFinished() || limit == 0) {
 			return evaluateSituation(board);
@@ -681,46 +600,22 @@ public class KalahBoard {
 		int[] currentState = board.board.clone();	//Erstelle eine Copy von dem Board vor den Moves
 		int v = Integer.MAX_VALUE;
 		int v1 = 0;
-		if (curPlayer == 'A') {
-			for (KalahBoard nextBoard : board.possibleActions()) {
-				if (nextBoard.isBonus()) {
-					v1 = minValue('A', limit-1, nextBoard);
-					if (v1 < v) {
-						v = v1;
-					}
-				} else {
-					v1 = maxValue('A', limit-1, nextBoard);
-					if (v1 < v) {
-						v = v1;
-					}
+		for (KalahBoard nextBoard : board.possibleActions()) {
+			if (nextBoard.isBonus()) {
+				v1 = minValue(limit-1, nextBoard);
+				if (v1 < v) {
+					v = v1;
+				}
+			} else {
+				v1 = maxValue(limit-1, nextBoard);
+				if (v1 < v) {
+					v = v1;
 				}
 			}
 		}
 
-		if (curPlayer == 'B') {
-			for (KalahBoard nextBoard : board.possibleActions()) {
-				if (nextBoard.isBonus()) {
-					v1 = minValue('B', limit-1, nextBoard);
-					if (v1 < v) {
-						v = v1;
-					}
-				} else {
-					v1 = maxValue('B', limit-1, nextBoard);
-					if (v1 < v) {
-						v = v1;
-					}
-
-				}
-			}
-		}
 		return v;
 	}
-
-
-
-
-
-
 
 	private boolean possibleAction(int mulde) {
 		switch (curPlayer) {
@@ -732,5 +627,9 @@ public class KalahBoard {
 				return false;
 		}
 	}
+
+
 }
+
+
 	

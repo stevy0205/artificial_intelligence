@@ -61,12 +61,12 @@ public class Kalah {
 
 		while (!kalahBd.isFinished()) {
 			if(kalahBd.curPlayer == 'A'){
-				System.out.println("Bester Move MinMax: " + kalahBd.maxAction('A',5));
-				System.out.println("Bester Move Alpha-Beta: " + kalahBd.alphaBetaSearch('A',5));
+				System.out.println("Bester Move MinMax: " + kalahBd.maxAction());
+				System.out.println("Bester Move Alpha-Beta: " + kalahBd.alphaBetaSearch());
 			}
 			if(kalahBd.curPlayer == 'B'){
-				System.out.println("Bester Move MinMax: " + kalahBd.maxAction('B', 5));
-				System.out.println("Bester Move Alpha-Beta: " + kalahBd.alphaBetaSearch('B',5));
+				System.out.println("Bester Move MinMax: " + kalahBd.maxAction());
+				System.out.println("Bester Move Alpha-Beta: " + kalahBd.alphaBetaSearch());
 
 			}
 			int action = kalahBd.readAction();
@@ -89,9 +89,9 @@ public class Kalah {
 		while (!kalahBd.isFinished()) {
 			int action;
 			if (kalahBd.getCurPlayer() == 'A') {
-				System.out.println("Best Move alphaBeta: " + kalahBd.alphaBetaSearch('A',5));
+				System.out.println("Best Move alphaBeta: " + kalahBd.alphaBetaSearch());
 				System.out.println("This turn took "+KalahBoard.alphaBetaCount + " alpha/beta turns");
-				System.out.println("Best Move MinMax: " + kalahBd.maxAction('A',5));
+				System.out.println("Best Move MinMax: " + kalahBd.maxAction());
 				System.out.println("This turn took "+KalahBoard.minMaxCount + " Min/Max turns");
 			}
 			action = kalahBd.readAction();
