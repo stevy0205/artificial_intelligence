@@ -216,7 +216,7 @@ public class KalahBoard {
 	 * Liefert eine Liste der möglichen Aktionen als Liste von Folge-Boards zurück.
 	 * @return Folge-Boards.
 	 */
-	public List<KalahBoard> possibleActions() {
+	public List<KalahBoard> possibleActions(boolean heuristik) {
 		List<KalahBoard> actionList = new LinkedList<>();
 		if (finish())
 			return actionList; // Keine Folgezüge mehr möglich
@@ -229,22 +229,23 @@ public class KalahBoard {
 				next.move(i);
 				actionList.add(next);	
 			}
-		}		
-		return sortPossibleActions(actionList);
+		}
+		if(heuristik) return sortPossibleActions(actionList);
+		else return actionList;
 	}
 
 	public List<KalahBoard> sortPossibleActions(List<KalahBoard> possibleActions){
 
 		Comparator<KalahBoard> heuristik = (o1, o2) -> {
 			if (curPlayer == 'A') {
-				if (o1.board[AKalah] > o2.board[AKalah])
+				if (o1.board[AKalah] - o1.board[BKalah] > o2.board[AKalah] - o2.board[BKalah])
 					return 1;
-				if (o1.board[AKalah] < o2.board[AKalah])
+				if (o1.board[AKalah] - o1.board[BKalah] < o2.board[AKalah] - o2.board[BKalah])
 					return -1;
 				else return 0;
-			} else if (o1.board[BKalah] > o2.board[BKalah])
+			} else if (o1.board[BKalah] - o1.board[AKalah] > o2.board[BKalah] - o2.board[AKalah])
 				return 1;
-			if (o1.board[BKalah] < o2.board[BKalah])
+			if (o1.board[BKalah] - o1.board[AKalah] < o2.board[BKalah] - o2.board[AKalah])
 				return -1;
 			else return 0;
 		};
@@ -420,10 +421,10 @@ public class KalahBoard {
 
 
 	/**
-	 * Start der Rekursion ohne Alpha-Beta
+	 * Start der Rekursion mit Alpha-Beta
 	 * @return Nummer der Mulde mit dem besten Zug
 	 */
-	public int alphaBetaSearch(){
+	public int alphaBetaSearch(boolean heuristik){
 		alphaBetaCount = 0;
 		int alpha = Integer.MIN_VALUE;
 		int beta = Integer.MAX_VALUE;
@@ -435,16 +436,16 @@ public class KalahBoard {
 		}
 
 
-		for (KalahBoard nextBoard : possibleActions()) {
+		for (KalahBoard nextBoard : possibleActions(heuristik)) {
 			if (nextBoard.isBonus()) {
-				v1 = maxValue(limit, nextBoard, alpha, beta);
+				v1 = maxValue(limit, nextBoard, alpha, beta, heuristik);
 				if (v1 > v) {
 					v = v1;
 					bestMulde = nextBoard.getLastPlay();
 				}
 				alpha = Math.max(alpha,v);
 			} else {
-				v1 = minValue(limit, nextBoard, alpha, beta);
+				v1 = minValue(limit, nextBoard, alpha, beta, heuristik);
 				if (v1 > v) {
 					v = v1;
 					bestMulde = nextBoard.getLastPlay();
@@ -464,7 +465,7 @@ public class KalahBoard {
 	 * @param beta	Beta Wert
 	 * @return Differenz von Mulden
 	 */
-	private int maxValue(int limit, KalahBoard board ,int alpha,int beta) {
+	private int maxValue(int limit, KalahBoard board ,int alpha,int beta, boolean heuristik) {
 		alphaBetaCount++;
 		if (isFinished() || limit == 0) {
 			return evaluateSituation(board);
@@ -472,9 +473,9 @@ public class KalahBoard {
 		int v = Integer.MIN_VALUE;
 		int v1 = 0;
 
-		for (KalahBoard nextBoard : board.possibleActions()) {
+		for (KalahBoard nextBoard : board.possibleActions(heuristik)) {
 			if (nextBoard.isBonus()) {
-				v1 = maxValue(limit - 1, nextBoard, alpha, beta);
+				v1 = maxValue(limit - 1, nextBoard, alpha, beta, heuristik);
 				if (v1 > v) {
 					v = v1;
 					if (v >= beta) {
@@ -483,7 +484,7 @@ public class KalahBoard {
 					alpha = Math.max(alpha, v);
 				}
 			} else {
-				v1 = minValue(limit - 1, nextBoard, alpha, beta);
+				v1 = minValue(limit - 1, nextBoard, alpha, beta, heuristik);
 				if (v1 > v) {
 					v = v1;
 					if (v >= beta) {
@@ -506,16 +507,16 @@ public class KalahBoard {
 	 * @param beta	Beta Wert
 	 * @return Differenz von Mulden
 	 */
-	private int minValue(int limit, KalahBoard board, int alpha, int beta) {
+	private int minValue(int limit, KalahBoard board, int alpha, int beta, boolean heuristik) {
 		alphaBetaCount++;
 		if (isFinished() || limit == 0) {
 			return evaluateSituation(board);
 		}
 		int v = Integer.MAX_VALUE;
 		int v1 = 0;
-		for (KalahBoard nextBoard : board.possibleActions()) {
+		for (KalahBoard nextBoard : board.possibleActions(heuristik)) {
 			if (nextBoard.isBonus()) {
-				v1 = minValue(limit-1, nextBoard, alpha, beta);
+				v1 = minValue(limit-1, nextBoard, alpha, beta, heuristik);
 				if (v1 < v) {
 					v = v1;
 					if(v<=alpha){
@@ -524,7 +525,7 @@ public class KalahBoard {
 					beta = Math.min(beta,v);
 				}
 			} else {
-				v1 = maxValue(limit-1, nextBoard, alpha, beta);
+				v1 = maxValue(limit-1, nextBoard, alpha, beta, heuristik);
 				if (v1 < v) {
 					v = v1;
 					if(v<=alpha){
@@ -553,7 +554,7 @@ public class KalahBoard {
 		}
 
 
-		for (KalahBoard nextBoard : possibleActions()) {
+		for (KalahBoard nextBoard : possibleActions(false)) {
 			if (nextBoard.isBonus()) {
 				v1 = maxValue(limit, nextBoard);
 				if (v1 > v) {
@@ -585,7 +586,7 @@ public class KalahBoard {
 		}
 		int v = Integer.MIN_VALUE;
 		int v1 = 0;
-		for (KalahBoard nextBoard : board.possibleActions()) {
+		for (KalahBoard nextBoard : board.possibleActions(false)) {
 			if (nextBoard.isBonus()) {
 				v1 = maxValue(limit-1, nextBoard);
 				if (v1 > v) {
@@ -617,7 +618,7 @@ public class KalahBoard {
 		int[] currentState = board.board.clone();	//Erstelle eine Copy von dem Board vor den Moves
 		int v = Integer.MAX_VALUE;
 		int v1 = 0;
-		for (KalahBoard nextBoard : board.possibleActions()) {
+		for (KalahBoard nextBoard : board.possibleActions(false)) {
 			if (nextBoard.isBonus()) {
 				v1 = minValue(limit-1, nextBoard);
 				if (v1 < v) {
