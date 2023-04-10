@@ -1,9 +1,6 @@
 package kalah.java;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.LinkedList;
-import java.util.Scanner;
+import java.util.*;
 
 /**
  * Klasse src.main.java.KalahBoard
@@ -233,7 +230,27 @@ public class KalahBoard {
 				actionList.add(next);	
 			}
 		}		
-		return actionList;
+		return sortPossibleActions(actionList);
+	}
+
+	public List<KalahBoard> sortPossibleActions(List<KalahBoard> possibleActions){
+
+		Comparator<KalahBoard> heuristik = (o1, o2) -> {
+			if (curPlayer == 'A') {
+				if (o1.board[AKalah] > o2.board[AKalah])
+					return 1;
+				if (o1.board[AKalah] < o2.board[AKalah])
+					return -1;
+				else return 0;
+			} else if (o1.board[BKalah] > o2.board[BKalah])
+				return 1;
+			if (o1.board[BKalah] < o2.board[BKalah])
+				return -1;
+			else return 0;
+		};
+
+		possibleActions.sort(heuristik);
+		return possibleActions;
 	}
 	
 	/**
